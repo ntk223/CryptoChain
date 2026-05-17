@@ -1,0 +1,10 @@
+# BE
+be/node_modules/
+be/.env
+
+# FE
+fe/node_modules/
+fe/.env
+
+# Ignore all .env files
+**/.env
