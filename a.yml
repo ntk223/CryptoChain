@@ -1,0 +1,74 @@
+version: '3.8'
+
+
+services:
+
+  # 1. Dịch vụ Cơ sở dữ liệu (PostgreSQL)
+
+  database:
+    image: postgres:16-alpine
+    container_name: crypto-db
+    restart: always
+    # ports: - "5432:5432" # Giấu port DB khỏi Internet, chỉ backend gọi nội bộ
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crypto-network
+
+  # 2. Dịch vụ Backend (Lấy từ Docker Hub)
+
+  backend-custom:
+    image: ntk223/crypto-backend:latest # Thay 'username_cua_ban' bằng tài khoản Docker Hub của bạn
+    container_name: crypto-backend-custom
+    restart: always
+    # Map port nội bộ ra localhost của VPS để Nginx (ngoài VPS) gọi vào
+    ports:
+      - "127.0.0.1:3003:${APP_PORT}"
+    environment:
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}
+      - APP_PORT=${APP_PORT}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - crypto-network
+
+
+
+  # 3. Dịch vụ Frontend (Lấy từ Docker Hub)
+
+  frontend:
+    image: ntk223/crypto-frontend:latest # Thay 'username_cua_ban' bằng tài khoản Docker Hub của bạn
+    container_name: crypto-frontend
+    restart: always
+    # Map port nội bộ ra localhost của VPS để Nginx (ngoài VPS) gọi vào
+
+    ports:
+      - "127.0.0.1:8080:80"
+
+    depends_on:
+      - backend-custom
+    networks:
+      - crypto-network
+
+
+volumes:
+  postgres_data:
+
+networks:
+  crypto-network:
+    driver: bridge

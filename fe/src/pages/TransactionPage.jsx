@@ -8,13 +8,13 @@ import Alert from '../components/Alert';
 import { ArrowLeftRight, Bitcoin, BookUser, CircleCheck, CreditCard, IdCard, LayersPlus, Pickaxe, Send, TriangleAlert, Wallet, Waypoints } from 'lucide-react';
 
 export default function TransactionPage() {
-  const [myWallets, setMyWallets]   = useState([]);
-  const [sender, setSender]         = useState(null);
-  const [recipient, setRecipient]   = useState('');
-  const [amount, setAmount]         = useState('');
-  const [loading, setLoading]       = useState(false);
+  const [myWallets, setMyWallets] = useState([]);
+  const [sender, setSender] = useState(null);
+  const [recipient, setRecipient] = useState('');
+  const [amount, setAmount] = useState('');
+  const [loading, setLoading] = useState(false);
   const [loadingWallets, setLoadingWallets] = useState(true);
-  const [msg, setMsg]               = useState(null);
+  const [msg, setMsg] = useState(null);
   const [confirmedTx, setConfirmedTx] = useState(null);
   const [recipientMode, setRecipientMode] = useState('wallet'); // 'wallet' | 'manual'
 
@@ -62,7 +62,7 @@ export default function TransactionPage() {
     if (recipientKey === sender.publicKey) return flash('error', 'Không thể gửi cho chính mình.');
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) return flash('error', 'Số lượng phải lớn hơn 0.');
-    if (amt > (sender.balance ?? 0)) return flash('error', `Không đủ số dư. Hiện có: ${sender.balance} coins.`);
+    if (amt > (sender.balance ?? 0)) return flash('error', `Không đủ số dư. Hiện có: ${sender.balance} BTC.`);
 
     setLoading(true);
     setConfirmedTx(null);
@@ -115,7 +115,7 @@ export default function TransactionPage() {
     <div className="animate-fade">
       <div className="page-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '30px' }}>
         <ArrowLeftRight size={24} color='var(--accent)' /> Giao Dịch
-        </div>
+      </div>
 
       {/* <div className="alert alert-info" style={{ marginBottom: '1.5rem' }}>
         <span>⚡</span>
@@ -158,7 +158,7 @@ export default function TransactionPage() {
                 >
                   {myWallets.map(w => (
                     <option key={w.publicKey} value={w.publicKey}>
-                      {w.name} · {(w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} coins
+                      {w.name} · {(w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} BTC
                     </option>
                   ))}
                 </select>
@@ -183,7 +183,7 @@ export default function TransactionPage() {
                     }}>
                       {(sender.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })}
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>coins</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>BTC</div>
                   </div>
                 </div>
               )}
@@ -198,17 +198,17 @@ export default function TransactionPage() {
                       onClick={() => { setRecipientMode('wallet'); setRecipient(''); }}
                     >
                       <Wallet size={18} color='var(--bg-primary)' />
-                       Ví của tôi</button>
+                      Ví của tôi</button>
                   )}
                   <button type="button"
                     className={`wallet-chip ${recipientMode === 'manual' ? 'active' : ''}`}
                     onClick={() => { setRecipientMode('manual'); setRecipient(''); }}
                   >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <BookUser size={14} color='var(--accent)' />
-                        <span>Nhập địa chỉ</span>
-                      </div>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <BookUser size={14} color='var(--accent)' />
+                      <span>Nhập địa chỉ</span>
+                    </div>
+                  </button>
                 </div>
 
                 {recipientMode === 'wallet' && otherMyWallets.length > 0 ? (
@@ -221,7 +221,7 @@ export default function TransactionPage() {
                     <option value="">-- Chọn ví nhận --</option>
                     {otherMyWallets.map(w => (
                       <option key={w.publicKey} value={w.publicKey}>
-                        {w.name} · {(w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} coins
+                        {w.name} · {(w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} BTC
                       </option>
                     ))}
                   </select>
@@ -239,7 +239,7 @@ export default function TransactionPage() {
 
               {/* Amount */}
               <div className="form-group">
-                <label className="form-label">Số lượng (coins)</label>
+                <label className="form-label">Số lượng (BTC)</label>
                 <input
                   id="amount-input"
                   type="number"
@@ -267,17 +267,17 @@ export default function TransactionPage() {
                       {recipientWallet?.name || shortenKey(recipient, 6)}
                     </span>
                     <span style={{ marginLeft: 'auto', fontWeight: 800, color: 'var(--accent-green)' }}>
-                      {parseFloat(amount).toLocaleString('vi-VN', { maximumFractionDigits: 4 })} coins
+                      {parseFloat(amount).toLocaleString('vi-VN', { maximumFractionDigits: 4 })} BTC
                     </span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     Balance sau:{' '}
                     <strong style={{ color: previewBalance >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                      {previewBalance.toLocaleString('vi-VN', { maximumFractionDigits: 4 })} coins
+                      {previewBalance.toLocaleString('vi-VN', { maximumFractionDigits: 4 })} BTC
                     </strong>
-                    {previewBalance < 0 && 
+                    {previewBalance < 0 &&
                       <span style={{ color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <TriangleAlert size={16} color="var(--accent-red)"/> 
+                        <TriangleAlert size={16} color="var(--accent-red)" />
                         Không đủ số dư!
                       </span>}
                   </div>
@@ -318,7 +318,7 @@ export default function TransactionPage() {
                   </div>
                   <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                     {confirmedTx.balanceAfter.toLocaleString('vi-VN', { maximumFractionDigits: 2 })}
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '3px' }}>coins</span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '3px' }}>BTC</span>
                   </div>
                 </div>
                 <div style={{ textAlign: 'center', fontSize: '1.4rem' }}>→</div>
@@ -356,50 +356,50 @@ export default function TransactionPage() {
               </div>
               <div className="card-title">Quy trình đào coin (Mine)</div>
             </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {[
-                  { n: '1', icon: <IdCard size={16} />, t: 'Ký giao dịch (client)', d: 'Private key ký SHA256(sender|recipient|amount) bằng ECDSA secp256k1' },
-                  { n: '2', icon: <CircleCheck size={16} />, t: 'Xác minh & kiểm tra balance', d: 'Miner kiểm tra chữ ký và balance' },
-                  { n: '3', icon: <Pickaxe size={16} />, t: 'Miner đào', d: 'Proof-of-Work: tìm nonce sao cho hash bắt đầu "00"' },
-                  { n: '4', icon: <LayersPlus size={16} />, t: 'Thêm block mới vào blockchain', d: '' },
-                ].map(item => ( 
-                  <div key={item.n} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                    
-                    {/* Vòng tròn số thứ tự */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {[
+                { n: '1', icon: <IdCard size={16} />, t: 'Ký giao dịch (client)', d: 'Private key ký SHA256(sender|recipient|amount) bằng ECDSA secp256k1' },
+                { n: '2', icon: <CircleCheck size={16} />, t: 'Xác minh & kiểm tra balance', d: 'Miner kiểm tra chữ ký và balance' },
+                { n: '3', icon: <Pickaxe size={16} />, t: 'Miner đào', d: 'Proof-of-Work: tìm nonce sao cho hash bắt đầu "00"' },
+                { n: '4', icon: <LayersPlus size={16} />, t: 'Thêm block mới vào blockchain', d: '' },
+              ].map(item => (
+                <div key={item.n} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+
+                  {/* Vòng tròn số thứ tự */}
+                  <div style={{
+                    width: '26px', height: '26px', borderRadius: '50%',
+                    background: 'var(--gradient)', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700,
+                    flexShrink: 0, color: 'white', marginTop: '2px' // Đẩy vòng tròn xuống một chút để căn chuẩn với dòng title đầu tiên
+                  }}>
+                    {item.n}
+                  </div>
+
+                  {/* Cột Nội dung */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+
+                    {/* Row chứa Icon và Tiêu đề */}
                     <div style={{
-                      width: '26px', height: '26px', borderRadius: '50%',
-                      background: 'var(--gradient)', display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700,
-                      flexShrink: 0, color: 'white', marginTop: '2px' // Đẩy vòng tròn xuống một chút để căn chuẩn với dòng title đầu tiên
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)'
                     }}>
-                      {item.n}
-                    </div>
-                    
-                    {/* Cột Nội dung */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      
-                      {/* Row chứa Icon và Tiêu đề */}
-                      <div style={{ 
-                        display: 'flex', alignItems: 'center', gap: '6px', 
-                        fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)'
-                      }}>
-                        <span style={{ display: 'flex', color: 'var(--accent)' }}>
-                          {item.icon}
-                        </span>
-                        <span>{item.t}</span>
-                      </div>
-                      
-                      {/* Chỉ render mô tả nếu có nội dung (d !== '') */}
-                      {item.d && (
-                        <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                          {item.d}
-                        </div>
-                      )}
+                      <span style={{ display: 'flex', color: 'var(--accent)' }}>
+                        {item.icon}
+                      </span>
+                      <span>{item.t}</span>
                     </div>
 
+                    {/* Chỉ render mô tả nếu có nội dung (d !== '') */}
+                    {item.d && (
+                      <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                        {item.d}
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

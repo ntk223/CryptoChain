@@ -2,6 +2,8 @@
 be/node_modules/
 be/.env
 
+be-custom/node_modules/
+be-custom/.env
 # FE
 fe/node_modules/
 fe/.env

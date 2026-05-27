@@ -7,7 +7,8 @@
     "dev": "nodemon server.js",
     "generate-keys": "node client/generate-keys.js",
     "send-transaction": "node client/send-transaction.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node client/test_custom_crypto.js",
+    "test-flow": "node client/test_full_flow.js",
     "start": "node server.js"
   },
   "keywords": [],
@@ -15,9 +16,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "crypto-js": "^4.2.0",
     "dotenv": "^17.4.2",
-    "elliptic": "^6.6.1",
     "express": "^4.19.2",
     "pg": "^8.12.0"
   }

@@ -1,5 +1,4 @@
-const BASE = 'http://localhost:3000';
-
+const BASE = import.meta.env.VITE_API_URL;
 async function request(method, path, body) {
   const opts = {
     method,
@@ -14,9 +13,11 @@ async function request(method, path, body) {
 
 // Tạo ví (server tạo key, lưu DB) → trả về { wallet } kể cả privateKey
 export const apiCreateWallet = (name) => request('POST', '/wallets', { name });
+export const apiImportWallet = (privateKey, name) => request('POST', '/wallets/import', { privateKey, name });
 
 // Lấy info + balance của 1 ví theo publicKey (KHÔNG có privateKey)
 export const apiGetWallet = (publicKey) => request('GET', `/wallet/${publicKey}`);
+export const apiUpdateWalletName = (publicKey, name) => request('PUT', `/wallet/${publicKey}/name`, { name });
 
 // Lấy balance nhanh
 export const apiGetBalance = (publicKey) => request('GET', `/balance/${publicKey}`);

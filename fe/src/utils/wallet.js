@@ -12,7 +12,7 @@ const ec = new EC('secp256k1');
 export function signTransaction({ privateKey, senderPublicKey, recipient, amount }) {
   const hash = CryptoJS.SHA256(`${senderPublicKey}|${recipient}|${amount}`).toString();
   const key  = ec.keyFromPrivate(privateKey, 'hex');
-  return key.sign(hash, 'hex').toDER('hex');
+  return key.sign(hash, 'hex', { canonical: true }).toDER('hex');
 }
 
 // ─── LocalStorage: danh sách ví của người dùng này ───────────────────────────
@@ -28,18 +28,25 @@ export function getLocalWallets() {
   catch { return []; }
 }
 
-/** Lưu 1 ví mới vào localStorage (sau khi tạo qua server). */
 export function addLocalWallet(wallet) {
   const list = getLocalWallets();
-  // Tránh trùng publicKey
-  if (list.some(w => w.publicKey === wallet.publicKey)) return list;
-  list.push({
-    name: wallet.name,
-    publicKey: wallet.publicKey,
-    privateKey: wallet.privateKey,
-    createdAt: wallet.createdAt,
-    balance: wallet.balance ?? 50,
-  });
+  const existingIdx = list.findIndex(w => w.publicKey === wallet.publicKey);
+  if (existingIdx !== -1) {
+    // Nếu trùng publicKey, cập nhật tên mới và balance
+    list[existingIdx] = {
+      ...list[existingIdx],
+      name: wallet.name,
+      balance: wallet.balance ?? list[existingIdx].balance,
+    };
+  } else {
+    list.push({
+      name: wallet.name,
+      publicKey: wallet.publicKey,
+      privateKey: wallet.privateKey,
+      createdAt: wallet.createdAt,
+      balance: wallet.balance ?? 50,
+    });
+  }
   localStorage.setItem(MY_WALLETS_KEY, JSON.stringify(list));
   return list;
 }

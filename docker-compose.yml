@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # 1. Dịch vụ Cơ sở dữ liệu (PostgreSQL)
+  database:
+    image: postgres:16-alpine
+    container_name: crypto-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crypto-network
+
+  # 2b. Dịch vụ Backend Custom (Không sử dụng thư viện mã hóa)
+  backend-custom:
+    build:
+      context: ./be-custom
+      dockerfile: Dockerfile
+    container_name: crypto-backend-custom
+    restart: always
+    ports:
+      - "3003:${APP_PORT}"
+    environment:
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}
+      - APP_PORT=${APP_PORT}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - crypto-network
+
+  # 3. Dịch vụ Frontend (Vite + Nginx)
+  frontend:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL} # Truyền biến build-time cho Vite
+        - VITE_APP_BASE_URL=${VITE_APP_BASE_URL} # Truyền biến build-time cho Vite
+    container_name: crypto-frontend
+    restart: always
+    ports:
+      - "8080:80" # Cổng truy cập Web Client
+    depends_on:
+      - backend-custom
+    networks:
+      - crypto-network
+
+volumes:
+  postgres_data:
+
+networks:
+  crypto-network:
+    driver: bridge

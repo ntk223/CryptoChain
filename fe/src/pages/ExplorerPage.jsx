@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiGetChain } from '../api/client';
 import { shortenKey, formatTime } from '../utils/wallet';
 import Alert from '../components/Alert';
+import CopyableKey from '../components/CopyableKey';
 import { useCopy } from '../hooks/useCopy';
 import { Banknote, Boxes, VectorSquare, Box, RefreshCcw, Play, Pause, Search, Bitcoin, ArrowLeftRight } from 'lucide-react';
 
@@ -15,7 +16,7 @@ function BlockCard({ block, index }) {
       <div className="block-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span className="block-number">
-            {isGenesis ? <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Bitcoin size={24} color="var(--accent)"/> Genesis Block</div> : `Block #${index}`}
+            {isGenesis ? <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Bitcoin size={24} color="var(--accent)" /> Genesis Block</div> : `Block #${index}`}
           </span>
           {!isGenesis && block.transactions?.length > 0 && (
             <span className="badge badge-green">{block.transactions.length} tx</span>
@@ -69,7 +70,7 @@ function BlockCard({ block, index }) {
             <hr className="divider" />
             <div className="section-heading" style={{ gap: '10px', display: 'flex', alignItems: 'center' }}>
               <ArrowLeftRight color='var(--accent)' size={20} />
-               Giao dịch ({block.transactions?.length || 0})</div>
+              Giao dịch ({block.transactions?.length || 0})</div>
             {!block.transactions?.length ? (
               <div className="empty-state" style={{ padding: '1rem' }}>
                 <div className="empty-state-icon" style={{ fontSize: '1.5rem' }}>📭</div>
@@ -81,19 +82,19 @@ function BlockCard({ block, index }) {
                   <div className="tx-item" key={i}>
                     <div className="tx-item-row">
                       <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Tx #{i + 1}</span>
-                      <span className="tx-amount">+{tx.amount} coins</span>
+                      <span className="tx-amount">+{tx.amount} BTC</span>
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                      <strong style={{ color: 'var(--accent)' }}>Từ:</strong>{' '}
-                      <span className="mono">{shortenKey(tx.senderPublicKey, 10)}</span>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <strong style={{ color: 'var(--accent)', flexShrink: 0 }}>Từ:</strong>
+                      <CopyableKey value={tx.senderPublicKey} shortenLen={10} style={{ fontSize: '0.72rem' }} />
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '2px' }}>
-                      <strong style={{ color: 'var(--accent-green)' }}>Đến:</strong>{' '}
-                      <span className="mono">{shortenKey(tx.recipient, 10)}</span>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <strong style={{ color: 'var(--accent-green)', flexShrink: 0 }}>Đến:</strong>
+                      <CopyableKey value={tx.recipient} shortenLen={10} style={{ fontSize: '0.72rem' }} />
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      <strong>Signature:</strong>{' '}
-                      <span className="mono">{shortenKey(tx.signature, 8)}</span>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <strong style={{ flexShrink: 0 }}>Signature:</strong>
+                      <CopyableKey value={tx.signature} shortenLen={8} style={{ fontSize: '0.68rem' }} />
                     </div>
                   </div>
                 ))}
@@ -107,9 +108,9 @@ function BlockCard({ block, index }) {
 }
 
 export default function ExplorerPage() {
-  const [chain, setChain]           = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [msg, setMsg]               = useState(null);
+  const [chain, setChain] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(null);
   const [searchHash, setSearchHash] = useState('');
@@ -134,6 +135,12 @@ export default function ExplorerPage() {
 
   useEffect(() => { fetchChain(); }, [fetchChain]);
 
+  // Listen for blockchain updates in real time
+  useEffect(() => {
+    window.addEventListener('blockchain-update', fetchChain);
+    return () => window.removeEventListener('blockchain-update', fetchChain);
+  }, [fetchChain]);
+
   useEffect(() => {
     if (!autoRefresh) return;
     const id = setInterval(fetchChain, 5000);
@@ -141,17 +148,17 @@ export default function ExplorerPage() {
   }, [autoRefresh, fetchChain]);
 
   // Stats
-  const totalTx   = chain.reduce((s, b) => s + (b.transactions?.length || 0), 0);
+  const totalTx = chain.reduce((s, b) => s + (b.transactions?.length || 0), 0);
   const latestBlock = chain[chain.length - 1];
-  const avgNonce  = chain.length > 1
+  const avgNonce = chain.length > 1
     ? Math.round(chain.slice(1).reduce((s, b) => s + (b.nonce || 0), 0) / (chain.length - 1))
     : 0;
 
   const filtered = searchHash
     ? chain.filter(b =>
-        b.hash?.toLowerCase().includes(searchHash.toLowerCase()) ||
-        b.previousHash?.toLowerCase().includes(searchHash.toLowerCase())
-      )
+      b.hash?.toLowerCase().includes(searchHash.toLowerCase()) ||
+      b.previousHash?.toLowerCase().includes(searchHash.toLowerCase())
+    )
     : chain;
 
   return (
@@ -160,58 +167,58 @@ export default function ExplorerPage() {
         <Search size={20} color='var(--accent)' style={{ marginRight: '10px' }} />
         Blockchain Explorer
       </div>
-<div style={{ display: 'flex', gap: '16px', alignItems: 'stretch', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-  
-  {/* 1. Thẻ Tổng blocks */}
-  <div className="stat-card" style={{ flex: 1, margin: 0 }}>
-    <div className="stat-icon icon-blue">
-      <VectorSquare size={30} />
-    </div>
-    <div>
-      <div className="stat-value">{chain.length}</div>
-      <div className="stat-label">Tổng blocks</div>
-    </div>
-  </div>
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
 
-  {/* 2. Thẻ Tổng giao dịch */}
-  <div className="stat-card" style={{ flex: 1, margin: 0 }}>
-    <div className="stat-icon icon-green">
-      <Banknote size={30} />
-    </div>
-    <div>
-      <div className="stat-value">{totalTx}</div>
-      <div className="stat-label">Tổng giao dịch</div>
-    </div>
-  </div>
-
-  {/* 3. Thẻ Block mới nhất */}
-  {latestBlock && (
-    <div className="card" style={{ flex: 2, margin: 0, display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
-        
-        <div className="card-icon icon-blue">
-          <Box size={30} />
-        </div>
-        
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            Block mới nhất #{chain.length - 1}
+        {/* 1. Thẻ Tổng blocks */}
+        <div className="stat-card" style={{ flex: 1, margin: 0 }}>
+          <div className="stat-icon icon-blue">
+            <VectorSquare size={30} />
           </div>
-          <div style={{ fontSize: '0.8rem', fontFamily: 'JetBrains Mono', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {latestBlock.hash}
+          <div>
+            <div className="stat-value">{chain.length}</div>
+            <div className="stat-label">Tổng blocks</div>
           </div>
         </div>
-        
-        {lastRefresh && (
-          <div style={{ flexShrink: 0, fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-            Cập nhật: {lastRefresh.toLocaleTimeString('vi-VN')}
+
+        {/* 2. Thẻ Tổng giao dịch */}
+        <div className="stat-card" style={{ flex: 1, margin: 0 }}>
+          <div className="stat-icon icon-green">
+            <Banknote size={30} />
+          </div>
+          <div>
+            <div className="stat-value">{totalTx}</div>
+            <div className="stat-label">Tổng giao dịch</div>
+          </div>
+        </div>
+
+        {/* 3. Thẻ Block mới nhất */}
+        {latestBlock && (
+          <div className="card" style={{ flex: 2, margin: 0, display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+
+              <div className="card-icon icon-blue">
+                <Box size={30} />
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Block mới nhất #{chain.length - 1}
+                </div>
+                <div style={{ fontSize: '0.8rem', fontFamily: 'JetBrains Mono', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {latestBlock.hash}
+                </div>
+              </div>
+
+              {lastRefresh && (
+                <div style={{ flexShrink: 0, fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  Cập nhật: {lastRefresh.toLocaleTimeString('vi-VN')}
+                </div>
+              )}
+
+            </div>
           </div>
         )}
-        
       </div>
-    </div>
-  )}
-</div>
 
       {/* Toolbar */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -248,7 +255,7 @@ export default function ExplorerPage() {
       ) : filtered.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon">
-            <Search size={32} color="var(--accent)"/>
+            <Search size={32} color="var(--accent)" />
           </div>
           <div className="empty-state-text">
             {searchHash ? 'Không tìm thấy block phù hợp.' : 'Blockchain trống.'}
