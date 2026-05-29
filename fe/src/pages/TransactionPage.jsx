@@ -5,6 +5,7 @@ import {
 } from '../utils/wallet';
 import { apiGetWallet, apiSendTransaction } from '../api/client';
 import Alert from '../components/Alert';
+import CustomSelect from '../components/CustomSelect';
 import { ArrowLeftRight, Bitcoin, BookUser, CircleCheck, CreditCard, IdCard, LayersPlus, Pickaxe, Send, TriangleAlert, Wallet, Waypoints } from 'lucide-react';
 
 export default function TransactionPage() {
@@ -12,6 +13,7 @@ export default function TransactionPage() {
   const [sender, setSender] = useState(null);
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
+  const [gasFee, setGasFee] = useState('0.2');
   const [loading, setLoading] = useState(false);
   const [loadingWallets, setLoadingWallets] = useState(true);
   const [msg, setMsg] = useState(null);
@@ -62,7 +64,13 @@ export default function TransactionPage() {
     if (recipientKey === sender.publicKey) return flash('error', 'Không thể gửi cho chính mình.');
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) return flash('error', 'Số lượng phải lớn hơn 0.');
-    if (amt > (sender.balance ?? 0)) return flash('error', `Không đủ số dư. Hiện có: ${sender.balance} BTC.`);
+    const fee = parseFloat(gasFee || 0);
+    if (fee < 0) return flash('error', 'Phí gas không được âm.');
+    
+    const totalRequired = amt + fee;
+    if (totalRequired > (sender.balance ?? 0)) {
+      return flash('error', `Không đủ số dư. Hiện có: ${sender.balance} BTC. Cần: ${totalRequired} BTC (bao gồm phí gas).`);
+    }
 
     setLoading(true);
     setConfirmedTx(null);
@@ -74,31 +82,33 @@ export default function TransactionPage() {
         senderPublicKey: sender.publicKey,
         recipient: recipientKey,
         amount: amt,
+        gas_fee: fee,
       });
 
       const result = await apiSendTransaction({
         senderPublicKey: sender.publicKey,
         recipient: recipientKey,
         amount: amt,
+        gas_fee: fee,
         signature,
       });
 
       setConfirmedTx({
-        block: result.block,
+        tx: result.transaction,
         chainLength: result.chainLength,
         fromName: sender.name,
         toKey: recipientKey,
         amount: amt,
+        gasFee: fee,
         balanceBefore,
-        balanceAfter: balanceBefore - amt,
+        balanceAfter: balanceBefore - totalRequired,
       });
 
       setAmount('');
-      setRecipient('');
 
       // Reload balance từ server
       await loadWallets();
-      flash('success', `✅ Giao dịch đã xác nhận trong Block #${result.chainLength - 1}!`);
+      flash('success', `Giao dịch đã được đưa vào hàng đợi khai thác (Mempool)!`);
     } catch (err) {
       flash('error', err.message);
     } finally {
@@ -109,7 +119,7 @@ export default function TransactionPage() {
   // Ví nhận: ví local khác sender hoặc nhập thủ công
   const otherMyWallets = myWallets.filter(w => w.publicKey !== sender?.publicKey);
   const recipientWallet = myWallets.find(w => w.publicKey === recipient);
-  const previewBalance = (sender?.balance ?? 0) - parseFloat(amount || 0);
+  const previewBalance = (sender?.balance ?? 0) - parseFloat(amount || 0) - parseFloat(gasFee || 0);
 
   return (
     <div className="animate-fade">
@@ -147,21 +157,20 @@ export default function TransactionPage() {
               {/* Sender */}
               <div className="form-group">
                 <label className="form-label">Ví người gửi</label>
-                <select
-                  id="sender-select"
-                  className="form-input"
+                <CustomSelect
+                  options={myWallets.map(w => ({
+                    value: w.publicKey,
+                    name: w.name,
+                    balance: (w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 }),
+                    publicKey: w.publicKey,
+                  }))}
                   value={sender?.publicKey || ''}
-                  onChange={e => {
-                    const w = myWallets.find(x => x.publicKey === e.target.value);
+                  onChange={val => {
+                    const w = myWallets.find(x => x.publicKey === val);
                     if (w) { setSender(w); setActiveWallet(w); }
                   }}
-                >
-                  {myWallets.map(w => (
-                    <option key={w.publicKey} value={w.publicKey}>
-                      {w.name} · {(w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} BTC
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Chọn ví gửi..."
+                />
               </div>
 
               {/* Balance card sender */}
@@ -197,8 +206,11 @@ export default function TransactionPage() {
                       className={`wallet-chip ${recipientMode === 'wallet' ? 'active' : ''}`}
                       onClick={() => { setRecipientMode('wallet'); setRecipient(''); }}
                     >
-                      <Wallet size={18} color='var(--bg-primary)' />
-                      Ví của tôi</button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Wallet size={14} color='var(--accent)' />
+                        Ví của tôi
+                      </div>
+                    </button>
                   )}
                   <button type="button"
                     className={`wallet-chip ${recipientMode === 'manual' ? 'active' : ''}`}
@@ -212,19 +224,17 @@ export default function TransactionPage() {
                 </div>
 
                 {recipientMode === 'wallet' && otherMyWallets.length > 0 ? (
-                  <select
-                    id="recipient-select"
-                    className="form-input"
+                  <CustomSelect
+                    options={otherMyWallets.map(w => ({
+                      value: w.publicKey,
+                      name: w.name,
+                      balance: (w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 }),
+                      publicKey: w.publicKey,
+                    }))}
                     value={recipient}
-                    onChange={e => setRecipient(e.target.value)}
-                  >
-                    <option value="">-- Chọn ví nhận --</option>
-                    {otherMyWallets.map(w => (
-                      <option key={w.publicKey} value={w.publicKey}>
-                        {w.name} · {(w.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} BTC
-                      </option>
-                    ))}
-                  </select>
+                    onChange={val => setRecipient(val)}
+                    placeholder="-- Chọn ví nhận --"
+                  />
                 ) : (
                   <input
                     id="recipient-input"
@@ -252,6 +262,29 @@ export default function TransactionPage() {
                 />
               </div>
 
+              {/* Gas Fee */}
+              <div className="form-group">
+                <label className="form-label">Phí Gas giao dịch</label>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                  {[
+                    { label: 'Phí thấp', value: 0.1 },
+                    { label: 'Trung bình', value: 0.2 },
+                    { label: 'Phí cao', value: 0.5 },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`wallet-chip ${parseFloat(gasFee) === opt.value ? 'active' : ''}`}
+                      onClick={() => setGasFee(String(opt.value))}
+                      style={{ flex: 1, padding: '10px 8px', fontSize: '0.8rem', textAlign: 'center' }}
+                    >
+                      <div>{opt.label}</div>
+                      <div style={{ fontWeight: 800, fontSize: '0.85rem', marginTop: '2px' }}>{opt.value} BTC</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Preview */}
               {sender && recipient && amount && parseFloat(amount) > 0 && (
                 <div style={{
@@ -271,12 +304,12 @@ export default function TransactionPage() {
                     </span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Balance sau:{' '}
+                    Balance sau (gồm phí gas):{' '}
                     <strong style={{ color: previewBalance >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                       {previewBalance.toLocaleString('vi-VN', { maximumFractionDigits: 4 })} BTC
                     </strong>
                     {previewBalance < 0 &&
-                      <span style={{ color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: 'var(--accent-red)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                         <TriangleAlert size={16} color="var(--accent-red)" />
                         Không đủ số dư!
                       </span>}
@@ -288,7 +321,7 @@ export default function TransactionPage() {
                 id="send-tx-btn"
                 type="submit"
                 className="btn btn-green btn-full"
-                disabled={loading || !sender || !recipient || !amount || parseFloat(amount) <= 0}
+                disabled={loading || !sender || !recipient || !amount || parseFloat(amount) <= 0 || parseFloat(gasFee || 0) < 0}
               >
                 {loading ? <span className="spinner" /> : <Send size={20} color="white" style={{ marginRight: '10px' }} />}
                 {loading ? 'Đang ký & gửi...' : 'Ký và Gửi Giao Dịch'}
@@ -307,16 +340,19 @@ export default function TransactionPage() {
                 <div className="card-icon icon-green">
                   <CircleCheck size={24} color="var(--accent-green)" />
                 </div>
-                <div className="card-title">Giao Dịch Xác Nhận!</div>
+                <div className="card-title">Giao Dịch Đã Gửi (Mempool)!</div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '8px', alignItems: 'center', marginBottom: '1rem' }}>
                 <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)', padding: '10px', textAlign: 'center' }}>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{confirmedTx.fromName}</div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--accent-red)', fontWeight: 700 }}>
-                    −{confirmedTx.amount.toLocaleString('vi-VN', { maximumFractionDigits: 4 })}
+                    −{(confirmedTx.amount + confirmedTx.gasFee).toLocaleString('vi-VN', { maximumFractionDigits: 4 })}
                   </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>
+                    (Phí gas: {confirmedTx.gasFee} BTC)
+                  </div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
                     {confirmedTx.balanceAfter.toLocaleString('vi-VN', { maximumFractionDigits: 2 })}
                     <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '3px' }}>BTC</span>
                   </div>
@@ -333,17 +369,12 @@ export default function TransactionPage() {
               </div>
 
               <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)', padding: '10px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Block xác nhận</div>
-                <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.7rem', color: 'var(--accent)', wordBreak: 'break-all' }}>
-                  {confirmedTx.block?.hash}
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Trạng thái giao dịch</div>
+                <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.8rem', color: 'var(--accent-yellow)', fontWeight: 700 }}>
+                  {confirmedTx.tx?.status || 'PENDING_MEMPOOL'}
                 </div>
-                <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: '0.72rem' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>
-                    Chain: <strong style={{ color: 'var(--text-primary)' }}>{confirmedTx.chainLength} blocks</strong>
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>
-                    Nonce: <strong style={{ color: 'var(--accent-yellow)' }}>{confirmedTx.block?.nonce?.toLocaleString()}</strong>
-                  </span>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px', wordBreak: 'break-all' }}>
+                  Giao dịch đã được gửi vào Mempool và đang chờ Miner khai thác để đóng vào block tiếp theo.
                 </div>
               </div>
             </div>

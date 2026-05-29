@@ -22,8 +22,12 @@ export const apiUpdateWalletName = (publicKey, name) => request('PUT', `/wallet/
 // Lấy balance nhanh
 export const apiGetBalance = (publicKey) => request('GET', `/balance/${publicKey}`);
 
-// Giao dịch – server tự mine sau khi nhận
+// Giao dịch
 export const apiSendTransaction = (payload) => request('POST', '/transaction', payload);
+export const apiGetPendingTransactions = () => request('GET', '/transactions/pending');
+
+// Mine
+export const apiMineBlock = (payload) => request('POST', '/mine', payload);
 
 // Chain (Explorer)
 export const apiGetChain = () => request('GET', '/chain');

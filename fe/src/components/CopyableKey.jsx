@@ -17,7 +17,7 @@ export default function CopyableKey({ value, shortenLen = 10, style = {} }) {
       }}
       className="copyable-key-container"
       style={style}
-      title="Click để sao chép public key đầy đủ"
+      title="Click để sao chép đầy đủ"
     >
       <span style={{ fontSize: 'inherit', fontFamily: 'inherit', color: 'inherit' }}>{displayVal}</span>
       {isCopied ? (

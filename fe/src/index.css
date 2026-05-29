@@ -240,6 +240,17 @@ code, .mono {
   box-shadow: 0 6px 20px rgba(52, 211, 153, 0.4);
 }
 
+.btn-purple {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+}
+
+.btn-purple:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(167, 139, 250, 0.4);
+}
+
 .btn-outline {
   background: transparent;
   color: var(--accent);
@@ -268,6 +279,7 @@ code, .mono {
 .badge-green { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
 .badge-yellow { background: rgba(251, 191, 36, 0.15); color: var(--accent-yellow); }
 .badge-red { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); }
+.badge-purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-2); }
 
 /* Alerts */
 .alert {
@@ -771,4 +783,44 @@ body.light-theme {
     width: 20px;
     height: 20px;
   }
+}
+
+/* Custom Select Option Styles */
+select.form-input option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Custom styling for select dropdowns to make them look smooth and consistent */
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a855f7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+select.form-input:hover {
+  border-color: var(--accent);
+}
+
+/* Custom Select Dropdown animations and styling */
+@keyframes selectFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-select-option:hover {
+  background-color: rgba(99, 130, 255, 0.1) !important;
 }

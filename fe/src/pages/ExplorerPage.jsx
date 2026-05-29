@@ -80,9 +80,16 @@ function BlockCard({ block, index }) {
               <div className="tx-list">
                 {block.transactions.map((tx, i) => (
                   <div className="tx-item" key={i}>
-                    <div className="tx-item-row">
+                    <div className="tx-item-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Tx #{i + 1}</span>
-                      <span className="tx-amount">+{tx.amount} BTC</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <span className="tx-amount" style={{ display: 'block', fontWeight: 'bold' }}>+{tx.amount} BTC</span>
+                        {tx.gas_fee > 0 && (
+                          <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', display: 'block' }}>
+                            Gas: {tx.gas_fee} BTC
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <strong style={{ color: 'var(--accent)', flexShrink: 0 }}>Từ:</strong>

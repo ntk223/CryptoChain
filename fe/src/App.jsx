@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import WalletPage from './pages/WalletPage';
 import TransactionPage from './pages/TransactionPage';
+import MiningPage from './pages/MiningPage';
 import ExplorerPage from './pages/ExplorerPage';
-import { Search, Wallet, ArrowLeftRight, Bitcoin, Sun, Moon, X, CheckCircle2, Info } from 'lucide-react';
+import { Search, Wallet, ArrowLeftRight, Bitcoin, Sun, Moon, X, CheckCircle2, Info, Pickaxe } from 'lucide-react';
 import { getLocalWallets, shortenKey } from './utils/wallet';
 
 const TABS = [
   { id: 'wallet', icon: <Wallet size={20} color='var(--accent)' style={{ marginRight: '10px' }} />, label: 'Ví' },
   { id: 'transaction', icon: <ArrowLeftRight size={20} color='var(--accent)' style={{ marginRight: '10px' }} />, label: 'Giao Dịch' },
+  { id: 'mining', icon: <Pickaxe size={20} color='var(--accent)' style={{ marginRight: '10px' }} />, label: 'Mining' },
   { id: 'explorer', icon: <Search size={20} color='var(--accent)' style={{ marginRight: '10px' }} />, label: 'Explorer' },
 ];
 
@@ -178,6 +180,7 @@ export default function App() {
       <main className="main-content">
         {tab === 'wallet' && <WalletPage />}
         {tab === 'transaction' && <TransactionPage />}
+        {tab === 'mining' && <MiningPage />}
         {tab === 'explorer' && <ExplorerPage />}
       </main>
     </div>

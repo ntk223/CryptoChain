@@ -9,8 +9,8 @@ const ec = new EC('secp256k1');
  * Ký giao dịch phía client.
  * Hash = SHA256(`${senderPublicKey}|${recipient}|${amount}`) — giống backend.
  */
-export function signTransaction({ privateKey, senderPublicKey, recipient, amount }) {
-  const hash = CryptoJS.SHA256(`${senderPublicKey}|${recipient}|${amount}`).toString();
+export function signTransaction({ privateKey, senderPublicKey, recipient, amount, gas_fee = 0 }) {
+  const hash = CryptoJS.SHA256(`${senderPublicKey}|${recipient}|${amount}|${gas_fee}`).toString();
   const key  = ec.keyFromPrivate(privateKey, 'hex');
   return key.sign(hash, 'hex', { canonical: true }).toDER('hex');
 }
@@ -93,4 +93,29 @@ export function formatTime(ts) {
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit', second: '2-digit',
   });
+}
+
+/**
+ * Perform Schnorr Key Aggregation (summing public key points on secp256k1)
+ * X_agg = X_1 + X_2 + ... + X_k
+ */
+export function aggregateSchnorrKeys(pubKeyHexs) {
+  if (!pubKeyHexs || pubKeyHexs.length === 0) return null;
+  try {
+    let aggPoint = null;
+    for (const hex of pubKeyHexs) {
+      if (!hex || hex === 'SYSTEM_MINING_REWARD') continue;
+      const point = ec.keyFromPublic(hex, 'hex').getPublic();
+      if (!aggPoint) {
+        aggPoint = point;
+      } else {
+        aggPoint = aggPoint.add(point);
+      }
+    }
+    if (!aggPoint) return null;
+    return aggPoint.encode('hex', true); // Return compressed public key hex
+  } catch (err) {
+    console.error('Error aggregating Schnorr keys:', err);
+    return null;
+  }
 }
