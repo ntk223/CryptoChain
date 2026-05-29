@@ -4,6 +4,7 @@ const chainController = require('../controllers/chainController');
 const router = express.Router();
 
 router.get('/mine', chainController.mineBlock);
+router.post('/mine', chainController.mineBlock);
 router.get('/chain', chainController.getChain);
 
 module.exports = router;

@@ -25,7 +25,7 @@ class Block {
 }
 
 class Blockchain {
-  constructor({ chain = null, difficulty = 2 } = {}) {
+  constructor({ chain = null, difficulty = 3 } = {}) {
     this.difficulty = difficulty;
     this.chain = chain && chain.length ? chain : [this.createGenesisBlock()];
     this.pendingTransactions = [];

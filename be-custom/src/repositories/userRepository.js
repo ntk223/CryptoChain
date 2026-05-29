@@ -51,7 +51,7 @@ async function getAllUsers() {
  *  - Cộng amount vào recipient
  * Nếu sender không đủ balance → throw error, không thay đổi gì.
  */
-async function updateBalances({ senderPublicKey, recipientPublicKey, amount }) {
+async function updateBalances({ senderPublicKey, recipientPublicKey, amount, gasFee = 0 }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -67,19 +67,20 @@ async function updateBalances({ senderPublicKey, recipientPublicKey, amount }) {
     }
 
     const senderBalance = Number(senderResult.rows[0].balance);
-    if (senderBalance < amount) {
+    const totalRequired = amount + gasFee;
+    if (senderBalance < totalRequired) {
       throw new Error(
-        `Insufficient balance. Available: ${senderBalance}, Required: ${amount}.`
+        `Insufficient balance. Available: ${senderBalance}, Required: ${totalRequired} (Amount: ${amount}, Gas: ${gasFee}).`
       );
     }
 
-    // Trừ balance người gửi
+    // Trừ balance người gửi (bao gồm cả phí gas)
     await client.query(
       `UPDATE users SET balance = balance - $1 WHERE public_key = $2`,
-      [amount, senderPublicKey]
+      [totalRequired, senderPublicKey]
     );
 
-    // Cộng balance người nhận
+    // Cộng balance người nhận (chỉ nhận amount, không bao gồm phí gas)
     await client.query(
       `UPDATE users SET balance = balance + $1 WHERE public_key = $2`,
       [amount, recipientPublicKey]

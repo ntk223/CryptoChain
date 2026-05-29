@@ -1,8 +1,8 @@
 const pool = require('../db/pool');
 const { Block } = require('../domain/blockchain');
 
-async function insertBlock({ height, block, difficulty }) {
-  const result = await pool.query(
+async function insertBlock({ height, block, difficulty }, client = pool) {
+  const result = await client.query(
     `
       INSERT INTO blocks (
         height,
@@ -28,7 +28,13 @@ async function insertBlock({ height, block, difficulty }) {
     ]
   );
 
-  return result.rows[0] || null;
+  // ON CONFLICT DO NOTHING sẽ không RETURN rows nếu height đã tồn tại
+  // Trả về null để caller biết block này đã bị miner khác chiếm trước
+  if (result.rows.length === 0) {
+    return null; // Orphan block — bị từ chối
+  }
+
+  return result.rows[0];
 }
 
 async function getAllBlocks() {
