@@ -6,6 +6,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    base: `${env.VITE_APP_BASE_URL}/` || '/',
+    base: env.VITE_APP_BASE_URL ? `${env.VITE_APP_BASE_URL}/` : '/',
   }
 })

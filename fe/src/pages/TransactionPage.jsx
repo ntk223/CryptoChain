@@ -156,7 +156,21 @@ export default function TransactionPage() {
             <form onSubmit={handleSend}>
               {/* Sender */}
               <div className="form-group">
-                <label className="form-label">Ví người gửi</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                  <label className="form-label" style={{ marginBottom: 0 }}>Ví người gửi</label>
+                  {sender && (
+                    <span style={{ fontSize: '0.78rem', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Balance:</span>
+                      <span style={{
+                        fontWeight: 800,
+                        color: (sender.balance ?? 0) > 0 ? 'var(--accent-green)' : 'var(--accent-red)',
+                      }}>
+                        {(sender.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })}
+                      </span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>BTC</span>
+                    </span>
+                  )}
+                </div>
                 <CustomSelect
                   options={myWallets.map(w => ({
                     value: w.publicKey,
@@ -173,29 +187,6 @@ export default function TransactionPage() {
                 />
               </div>
 
-              {/* Balance card sender */}
-              {sender && (
-                <div style={{
-                  background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)',
-                  padding: '12px 16px', marginBottom: '1.2rem',
-                  border: '1px solid var(--border)',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                }}>
-                  <div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Balance hiện tại</div>
-                    <div style={{ fontWeight: 600 }}>{sender.name}</div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{
-                      fontSize: '1.4rem', fontWeight: 800,
-                      color: (sender.balance ?? 0) > 0 ? 'var(--accent-green)' : 'var(--accent-red)',
-                    }}>
-                      {(sender.balance ?? 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })}
-                    </div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>BTC</div>
-                  </div>
-                </div>
-              )}
 
               {/* Recipient */}
               <div className="form-group">
@@ -385,7 +376,7 @@ export default function TransactionPage() {
               <div className="card-icon icon-purple">
                 <Waypoints color='var(--accent)' size={24} />
               </div>
-              <div className="card-title">Quy trình đào coin (Mine)</div>
+              <div className="card-title">Quy trình giao dịch</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[

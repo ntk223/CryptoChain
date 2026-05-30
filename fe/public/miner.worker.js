@@ -23,6 +23,7 @@ self.onmessage = function (e) {
 // Hàm đào coin chạy ngầm
 function mine(previousHash, timestamp, blockTransactionsStr, difficulty) {
   const targetPrefix = '0'.repeat(difficulty);
+  const maxFifthChar = "4";
   let currentNonce = 0;
   const batchSize = 5000; // Số lượng hash xử lý mỗi đợt trước khi check lệnh dừng
   const startT = Date.now();
@@ -39,7 +40,7 @@ function mine(previousHash, timestamp, blockTransactionsStr, difficulty) {
       ).toString();
 
       // Nếu tìm thấy Nonce hợp lệ
-      if (hash.startsWith(targetPrefix)) {
+      if (hash.startsWith(targetPrefix) && hash.charAt(4) <= maxFifthChar) {
         // Gửi kết quả thành công về cho React
         self.postMessage({
           status: 'SUCCESS',

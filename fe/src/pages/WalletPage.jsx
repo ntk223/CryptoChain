@@ -154,7 +154,8 @@ export default function WalletPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px'
+                gap: '6px',
+                fontFamily: 'Arial, sans-serif',
               }}
             >
               <CirclePlus size={16} />
@@ -176,7 +177,8 @@ export default function WalletPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '6px'
+                gap: '6px',
+                fontFamily: 'Arial, sans-serif',
               }}
             >
               <KeyRound size={16} />
@@ -339,7 +341,7 @@ export default function WalletPage() {
                 maxWidth: '200px',
               }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
                 <input
                   id="wallet-search-input"

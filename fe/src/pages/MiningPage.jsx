@@ -203,8 +203,9 @@ export default function MiningPage() {
     const blockTransactions = [...mappedUserTxs, coinbaseTx];
     const blockTransactionsStr = JSON.stringify(blockTransactions);
 
-    // Spawn the Web Worker from /public/miner.worker.js
-    const worker = new Worker('/miner.worker.js');
+    // Spawn the Web Worker — dùng BASE_URL để đúng path khi deploy với sub-path (vd: /crypto-chain/)
+    const workerUrl = `${import.meta.env.BASE_URL}miner.worker.js`;
+    const worker = new Worker(workerUrl);
     workerRef.current = worker;
 
     // Handle messages from worker
@@ -234,7 +235,8 @@ export default function MiningPage() {
 
     worker.onerror = (err) => {
       console.error('[Worker Error]', err);
-      flash('error', `Lỗi Web Worker: ${err.message}`);
+      const errorMsg = err.message || `Không thể tải Worker từ: ${workerUrl}`;
+      flash('error', `Lỗi Web Worker: ${errorMsg}`);
       clearInterval(timerRef.current);
       setIsMining(false);
       isMiningRef.current = false;
@@ -312,7 +314,7 @@ export default function MiningPage() {
               <div className="card-icon icon-purple">
                 <Cpu size={24} color="var(--accent)" />
               </div>
-              <div className="card-title">Khai Thác Bằng GPU/CPU Web</div>
+              <div className="card-title">Khai Thác Bằng GPU/CPU</div>
             </div>
 
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>

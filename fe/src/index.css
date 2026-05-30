@@ -555,32 +555,41 @@ code, .mono {
 @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes bellRing {
+  0%   { transform: rotate(0deg); }
+  15%  { transform: rotate(15deg); }
+  30%  { transform: rotate(-12deg); }
+  45%  { transform: rotate(10deg); }
+  60%  { transform: rotate(-8deg); }
+  75%  { transform: rotate(5deg); }
+  100% { transform: rotate(0deg); }
+}
 
 .animate-fade { animation: fadeIn 0.4s ease; }
 .animate-pulse { animation: pulse 2s infinite; }
 
 /* Theme Styles */
 body.light-theme {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #dde4ee;
   --bg-card: #ffffff;
-  --bg-card-hover: #f8fafc;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --border: rgba(99, 130, 255, 0.25);
-  --border-hover: rgba(99, 130, 255, 0.45);
-  --accent: #4f46e5;
-  --accent-2: #8b5cf6;
-  --accent-green: #059669;
-  --accent-red: #dc2626;
-  --accent-yellow: #d97706;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #57657a;
-  --gradient: linear-gradient(135deg, #4f46e5, #8b5cf6);
-  --gradient-green: linear-gradient(135deg, #10b981, #059669);
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 25px rgba(79, 70, 229, 0.06);
-  --bg-wallet: linear-gradient(135deg, #ffffff, #f1f5f9);
+  --bg-card-hover: #f5f7fa;
+  --bg-glass: rgba(255, 255, 255, 0.92);
+  --border: rgba(79, 70, 229, 0.30);
+  --border-hover: rgba(79, 70, 229, 0.55);
+  --accent: #4338ca;
+  --accent-2: #7c3aed;
+  --accent-green: #047857;
+  --accent-red: #b91c1c;
+  --accent-yellow: #b45309;
+  --text-primary: #0c1225;
+  --text-secondary: #1e2d45;
+  --text-muted: #4a5568;
+  --gradient: linear-gradient(135deg, #4338ca, #7c3aed);
+  --gradient-green: linear-gradient(135deg, #059669, #047857);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 25px rgba(67, 56, 202, 0.12);
+  --bg-wallet: linear-gradient(135deg, #ffffff, #e8edf5);
 }
 
 .copyable-key-container {
